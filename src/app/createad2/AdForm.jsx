@@ -1,18 +1,26 @@
 'use client';
 
-import { Card, Container, Input, Text } from '@nextui-org/react';
+import React from 'react';
 
-// Tittel
-// Category
-// Description
-// Price
-// IMG Upload
-// Street Adress
-// Zipcode
-// Phone
-// Email
+import {
+  Card,
+  Container,
+  Input,
+  NextUIProvider,
+  Text,
+  Button,
+  Spacer,
+} from '@nextui-org/react';
+
+import { Dropdown } from '@nextui-org/react';
 
 export default function AdForm() {
+  const [selected, setSelected] = React.useState(new Set(['text']));
+
+  const selectedValue = React.useMemo(
+    () => Array.from(selected).join(', ').replaceAll('_', ' '),
+    [selected]
+  );
   return (
     <Container
       display="flex"
@@ -34,53 +42,59 @@ export default function AdForm() {
           clearable
           bordered
           fullWidth
-          color="primary"
           size="lg"
-          placeholder="Title"
           label="Title"
-        ></Input>
-        <Input
-          label="Category"
-          labelPlaceholder="Title"
-          clearable
           required
         ></Input>
+        <Dropdown>
+          <Dropdown.Button flat>Category</Dropdown.Button>
+          <Dropdown.Menu
+            aria-label="Single selection actions"
+            selectionMode="single"
+            disallowEmptySelection
+            selectedKeys={selected}
+            onSelectionChange={setSelected}
+          >
+            <Dropdown.Item key="electronics">Electronics</Dropdown.Item>
+            <Dropdown.Item key="clothing">Clothing</Dropdown.Item>
+            <Dropdown.Item key="other">Other</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
         <Input
+          clearable
+          bordered
+          fullWidth
+          size="lg"
           label="Description"
-          labelPlaceholder="Description"
-          clearable
           required
         ></Input>
         <Input
+          clearable
+          bordered
+          fullWidth
+          size="lg"
           label="Price"
-          labelPlaceholder="Price"
-          clearable
+          placeholder="Kr."
           required
         ></Input>
         <Input
+          clearable
+          bordered
+          fullWidth
+          size="lg"
           label="Street Address"
-          labelPlaceholder="Street Address"
-          clearable
-          required
         ></Input>
+        <Input clearable bordered fullWidth size="lg" label="Zipcode"></Input>
         <Input
-          label="Zipcode"
-          labelPlaceholder="Zipcode"
           clearable
-          required
+          bordered
+          fullWidth
+          size="lg"
+          label="Phone Number"
         ></Input>
-        <Input
-          label="Phone"
-          labelPlaceholder="Phone"
-          clearable
-          required
-        ></Input>
-        <Input
-          label="Email"
-          labelPlaceholder="Email"
-          clearable
-          required
-        ></Input>
+        <Input clearable bordered fullWidth size="lg" label="Email"></Input>
+        <Spacer y={1} />
+        <Button>Create Post</Button>
       </Card>
     </Container>
   );
