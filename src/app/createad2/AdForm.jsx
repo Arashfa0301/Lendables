@@ -3,99 +3,228 @@
 import React from 'react';
 
 import {
+  Button,
   Card,
   Container,
+  Grid,
   Input,
-  NextUIProvider,
-  Text,
-  Button,
   Spacer,
+  Text,
 } from '@nextui-org/react';
 
 import { Dropdown } from '@nextui-org/react';
 
-export default function AdForm() {
-  const [selected, setSelected] = React.useState(new Set(['text']));
+//Import pocketbase
+import pb from '@lib/pocketbase';
 
-  const selectedValue = React.useMemo(
-    () => Array.from(selected).join(', ').replaceAll('_', ' '),
-    [selected]
-  );
+import { useForm } from 'react-hook-form';
+
+//Login to pocketbase
+const pbLogin = async () => {
+  await pb
+    .collection('users')
+    .authWithPassword('magnus.stromseng@gmail.com', 'asdasdasd');
+  console.log(pb.authStore.isValid);
+  console.log(pb.authStore.token);
+  console.log(pb.authStore.model.id);
+};
+
+//Create record from form data and selected files
+const pbCreateAd = async (data, selectedCategory) => {
+  const formData = new FormData();
+  //Append form data to formData
+  formData.append('title', data.title);
+  formData.append('description', data.description);
+  formData.append('price', data.price);
+  formData.append('seller', pb.authStore.model.id);
+  formData.append('category', selectedCategory);
+  formData.append('address', data.address);
+  formData.append('zipcode', data.zipcode);
+  // if (selectedFiles) {
+  //   for (let file of selectedFiles) {
+  //     formData.append('pictures', file);
+  //   }
+  // }
+  //Try to create record in pocketbase
+  const result = await pb.collection('advertisements').create(formData);
+  return result;
+};
+
+export default function AdForm() {
+  const [selectedCategory, setSelectedCategory] = React.useState('Category');
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
+
+  //Handle form submit
+  const onSubmit = (data) => {
+    console.log('Form Data:', data);
+    console.log('Form Data:', {
+      Title: data.title,
+      Category: { selectedCategory },
+      Description: data.description,
+      Price: data.price,
+      Address: data.address,
+      Zipcode: data.zipcode,
+    });
+    pbLogin();
+    pbCreateAd(data, selectedCategory)
+      .then((result) => {
+        // success...
+        console.log('Result:', result);
+      })
+      .catch((error) => {
+        // error...
+        console.log('Error:', error);
+        console.log('Data:', error.data);
+        let errorMessages = new Set();
+        for (const [key, value] of Object.entries(error.data.data)) {
+          console.log(key, value.message);
+          errorMessages.add(key + ':' + value.message + ' ');
+        }
+      });
+  };
+
   return (
-    <Container
-      display="flex"
-      alignItems="center"
-      justify="center"
-      css={{ minHeight: '100vh' }}
-    >
-      <Card css={{ mw: '420px', p: '20px' }}>
-        <Text
-          h2
-          css={{
-            as: 'center',
-          }}
-        >
-          {' '}
-          Create Post
-        </Text>
-        <Input
-          clearable
-          bordered
-          fullWidth
-          size="lg"
-          label="Title"
-          required
-        ></Input>
-        <Dropdown>
-          <Dropdown.Button flat>Category</Dropdown.Button>
-          <Dropdown.Menu
-            aria-label="Single selection actions"
-            selectionMode="single"
-            disallowEmptySelection
-            selectedKeys={selected}
-            onSelectionChange={setSelected}
-          >
-            <Dropdown.Item key="electronics">Electronics</Dropdown.Item>
-            <Dropdown.Item key="clothing">Clothing</Dropdown.Item>
-            <Dropdown.Item key="other">Other</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-        <Input
-          clearable
-          bordered
-          fullWidth
-          size="lg"
-          label="Description"
-          required
-        ></Input>
-        <Input
-          clearable
-          bordered
-          fullWidth
-          size="lg"
-          label="Price"
-          placeholder="Kr."
-          required
-        ></Input>
-        <Input
-          clearable
-          bordered
-          fullWidth
-          size="lg"
-          label="Street Address"
-        ></Input>
-        <Input clearable bordered fullWidth size="lg" label="Zipcode"></Input>
-        <Input
-          clearable
-          bordered
-          fullWidth
-          size="lg"
-          label="Phone Number"
-        ></Input>
-        <Input clearable bordered fullWidth size="lg" label="Email"></Input>
-        <Spacer y={1} />
-        <Button>Create Post</Button>
-      </Card>
-    </Container>
+    <>
+      <Container xs>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Card>
+            <Card.Body>
+              <Grid.Container gap={2} justify="center">
+                <Text
+                  h2
+                  css={{
+                    as: 'center',
+                  }}
+                >
+                  {' '}
+                  Create Post
+                </Text>
+                <Grid xs={12}>
+                  <Input
+                    {...register('title')}
+                    clearable
+                    bordered
+                    fullWidth
+                    size="lg"
+                    label="Title"
+                    required
+                  ></Input>
+                </Grid>
+                <Grid xs={12} type="flex" direction="column">
+                  <Text
+                    css={{
+                      marginBottom: '0.375rem',
+                    }}
+                  >
+                    Category
+                  </Text>
+                  <Dropdown>
+                    <Dropdown.Button
+                      flat
+                      css={{
+                        width: '100%',
+                      }}
+                    >
+                      {selectedCategory}
+                    </Dropdown.Button>
+                    <Dropdown.Menu
+                      aria-label="Single selection actions"
+                      selectionMode="single"
+                      disallowEmptySelection
+                      selectedKeys={selectedCategory}
+                      onSelectionChange={setSelectedCategory}
+                    >
+                      <Dropdown.Item key="Electronics">
+                        Electronics
+                      </Dropdown.Item>
+                      <Dropdown.Item key="Clothing">Clothing</Dropdown.Item>
+                      <Dropdown.Item key="Other">Other</Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </Grid>
+                <Grid xs={12}>
+                  <Input
+                    {...register('description')}
+                    clearable
+                    bordered
+                    fullWidth
+                    size="lg"
+                    label="Description"
+                  ></Input>
+                </Grid>
+                <Grid xs={12}>
+                  <Input
+                    {...register('price')}
+                    clearable
+                    bordered
+                    fullWidth
+                    size="lg"
+                    label="Price"
+                    placeholder="Kr."
+                  ></Input>
+                </Grid>
+                <Grid xs={12}>
+                  <Input
+                    {...register('address')}
+                    clearable
+                    bordered
+                    fullWidth
+                    size="lg"
+                    label="Street Address"
+                  ></Input>
+                </Grid>
+                <Grid xs={12}>
+                  <Input
+                    {...register('phone')}
+                    clearable
+                    bordered
+                    fullWidth
+                    size="lg"
+                    label="Phone Number"
+                  ></Input>
+                </Grid>
+
+                <Grid xs={12}>
+                  <Input
+                    {...register('zipcode')}
+                    clearable
+                    bordered
+                    fullWidth
+                    size="lg"
+                    label="Zipcode"
+                  ></Input>
+                </Grid>
+                <Grid xs={12}>
+                  <Input
+                    {...register('email')}
+                    clearable
+                    bordered
+                    fullWidth
+                    size="lg"
+                    label="Email"
+                  ></Input>
+                </Grid>
+                <Grid xs={12}>
+                  <Button
+                    type="submit"
+                    css={{
+                      width: '100%',
+                    }}
+                  >
+                    Create Post
+                  </Button>
+                </Grid>
+              </Grid.Container>
+            </Card.Body>
+          </Card>
+        </form>
+      </Container>
+    </>
   );
 }

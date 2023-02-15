@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import './globals.css';
-import MyThemeProvider from './MyThemeProvider';
 
 export default function RootLayout({ children }) {
   return (
@@ -11,7 +10,7 @@ export default function RootLayout({ children }) {
             <Link href="/">Home</Link>
             <Link href="/ads">ads</Link>
           </nav>
-          <MyThemeProvider>{children}</MyThemeProvider>
+          {children}
         </main>
       </body>
     </html>
