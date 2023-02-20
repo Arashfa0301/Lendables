@@ -19,6 +19,9 @@ import pb from '@lib/pocketbase';
 
 import { useForm } from 'react-hook-form';
 
+//My components
+import StandardImageList from './StandardImageList';
+
 //Login to pocketbase
 const pbLogin = async () => {
   await pb
@@ -29,28 +32,16 @@ const pbLogin = async () => {
   console.log(pb.authStore.model.id);
 };
 
-//Create record from form data and selected files
-const pbCreateAd = async (data, selectedCategory) => {
-  const formData = new FormData();
-  //Append form data to formData
-  formData.append('title', data.title);
-  formData.append('description', data.description);
-  formData.append('price', data.price);
-  formData.append('seller', pb.authStore.model.id);
-  formData.append('category', selectedCategory);
-  formData.append('address', data.address);
-  formData.append('zipcode', data.zipcode);
-  // if (selectedFiles) {
-  //   for (let file of selectedFiles) {
-  //     formData.append('pictures', file);
-  //   }
-  // }
-  //Try to create record in pocketbase
-  const result = await pb.collection('advertisements').create(formData);
-  return result;
-};
+function getFirstItemOfSet(set) {
+  for (let item of set) {
+    if (item) {
+      return item;
+    }
+  }
+  return undefined;
+}
 
-export default function AdForm() {
+export default function PostForm() {
   const [selectedCategory, setSelectedCategory] = React.useState('Category');
 
   const {
@@ -59,6 +50,30 @@ export default function AdForm() {
     watch,
     formState: { errors },
   } = useForm();
+
+  //Create record from form data and selected files
+  const pbCreateAd = async (data, selectedCategory) => {
+    const formData = new FormData();
+    //Append form data to formData
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    formData.append('price', data.price);
+    formData.append('seller', pb.authStore.model.id);
+    let category = getFirstItemOfSet(selectedCategory);
+    formData.append('category', category);
+    formData.append('address', data.address);
+    formData.append('zipcode', data.zipcode);
+    formData.append('phone', data.phone);
+    formData.append('email', data.email);
+    //For each file, append to formData
+    for (let i = 0; i < data.pictures.length; i++) {
+      formData.append('pictures', data.pictures[i]);
+    }
+    console.log('Form Data before sending to pb:', formData);
+    //Try to create record in pocketbase
+    const result = await pb.collection('advertisements').create(formData);
+    return result;
+  };
 
   //Handle form submit
   const onSubmit = (data) => {
@@ -167,6 +182,13 @@ export default function AdForm() {
                     size="lg"
                     label="Price"
                     placeholder="Kr."
+                  ></Input>
+                </Grid>
+                <Grid xs={12}>
+                  <Input
+                    type="file"
+                    label="Upload images"
+                    {...register('pictures')}
                   ></Input>
                 </Grid>
                 <Grid xs={12}>
