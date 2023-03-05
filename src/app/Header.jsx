@@ -53,18 +53,39 @@ export default function Header() {
           </Link>
         </li>
         <li>
-          <Link href="/login">
-            <link
-              rel="stylesheet"
-              href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,500,1,0"
-            />
-            <span className={`${styles.icon} material-symbols-outlined`}>
-              account_circle
-            </span>
-            {username ?? 'Log in'}
-          </Link>
+          {pb.authStore.isValid ? LinkUser(username) : LinkLogin(username)}
         </li>
       </ul>
     </nav>
+  );
+}
+
+function LinkLogin(username) {
+  return (
+    <Link href="/login">
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,500,1,0"
+      />
+      <span className={`${styles.icon} material-symbols-outlined`}>
+        account_circle
+      </span>
+      {username ?? 'Log in'}
+    </Link>
+  );
+}
+
+function LinkUser(username) {
+  return (
+    <Link href={'/user/' + pb.authStore.model.id}>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,500,1,0"
+      />
+      <span className={`${styles.icon} material-symbols-outlined`}>
+        account_circle
+      </span>
+      {username ?? 'Log in'}
+    </Link>
   );
 }
