@@ -12,9 +12,10 @@ import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
+import { useRouter } from 'next/navigation';
 
 //Import pocketbase
-import pb from '@lib/pocketbase';
+import pb from 'src/app/(lib)/pocketbase.js';
 
 //Import Roboto font
 import '@fontsource/roboto/300.css';
@@ -26,7 +27,8 @@ import '@fontsource/roboto/700.css';
 import StandardImageList from './StandardImageList';
 
 //Check user preference for dark mode
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+// const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const prefersDark = false;
 // True if preference is set to dark, false otherwise.
 
 //Create theme based on user preference
@@ -45,16 +47,6 @@ if (prefersDark) {
   });
 }
 
-//Login to pocketbase
-const pbLogin = async () => {
-  await pb
-    .collection('users')
-    .authWithPassword('magnus.stromseng@gmail.com', 'asdasdasdasd');
-  console.log(pb.authStore.isValid);
-  console.log(pb.authStore.token);
-  console.log(pb.authStore.model.id);
-};
-
 //Create record from form data and selected files
 const pbCreateAd = async (data, selectedFiles) => {
   const formData = new FormData();
@@ -66,6 +58,8 @@ const pbCreateAd = async (data, selectedFiles) => {
   formData.append('category', data.get('category'));
   formData.append('address', data.get('address'));
   formData.append('zipcode', data.get('zipcode'));
+  formData.append('phone', data.get('phone'));
+  formData.append('email', data.get('email'));
   if (selectedFiles) {
     for (let file of selectedFiles) {
       formData.append('pictures', file);
@@ -78,6 +72,7 @@ const pbCreateAd = async (data, selectedFiles) => {
 
 //Component
 export default function Page() {
+  const router = useRouter();
   const [submitButtonColor, setSubmitButtonColor] = React.useState('primary');
   const [submitButtonText, setSubmitButtonText] =
     React.useState('Opprett Annonse');
@@ -91,9 +86,9 @@ export default function Page() {
 
   //Unused form hooks for now (will be used later when implementing proper form validation)
   // eslint-disable-next-line no-unused-vars
-  const [Address, setAddress] = React.useState('');
+  const [address, setAddress] = React.useState('');
   // eslint-disable-next-line no-unused-vars
-  const [Zipcode, setZipcode] = React.useState('');
+  const [zipcode, setZipcode] = React.useState('');
   // eslint-disable-next-line no-unused-vars
   const [phone, setPhone] = React.useState('');
   // eslint-disable-next-line no-unused-vars
@@ -135,21 +130,24 @@ export default function Page() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log('Form Data:', data);
-    console.log('Form Data:', {
+    console.log('Form Data1:', data);
+    console.log('Form Data2:', {
       Title: data.get('title'),
       Category: data.get('category'),
       Description: data.get('description'),
       Price: data.get('price'),
       Address: data.get('address'),
       Zipcode: data.get('zipcode'),
+      Phone: data.get('phone'),
+      Email: data.get('email'),
+      Pictures: selectedFiles,
     });
-    pbLogin();
     pbCreateAd(data, selectedFiles)
       .then((result) => {
         // success...
-        console.log('Result:', result);
+        console.log('PB Result:', result);
         setSubmitButtonStyle('success', 'Success');
+        router.push('/posts');
       })
       .catch((error) => {
         // error...
@@ -184,7 +182,6 @@ export default function Page() {
           boxShadow: 1,
         }}
       >
-        <CssBaseline />
         <Box
           sx={{
             marginTop: 4,
@@ -334,8 +331,8 @@ export default function Page() {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  id="phone"
-                  name="phone"
+                  id="email"
+                  name="email"
                   label="Epost"
                   type="email"
                   onChange={(e) => {
@@ -351,7 +348,7 @@ export default function Page() {
                   fullWidth
                   color={submitButtonColor}
                   endIcon={<SendIcon />}
-                  disabled={validateForm()}
+                  disabled={!validateForm()}
                 >
                   {submitButtonText}
                 </Button>

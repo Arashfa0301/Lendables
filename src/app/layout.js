@@ -1,17 +1,11 @@
-import Link from 'next/link';
 import './globals.css';
+import Providers from './Providers';
 
 export default function RootLayout({ children }) {
   return (
     <html>
       <body>
-        <main>
-          <nav>
-            <Link href="/">Home</Link>
-            <Link href="/ads">ads</Link>
-          </nav>
-          {children}
-        </main>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -1,0 +1,10 @@
+.navBar a {
+    display: flex;
+    align-items: center;
+    height: 65px;
+}
+  
+.icon{
+    margin: 0px 3px;
+}
+  
