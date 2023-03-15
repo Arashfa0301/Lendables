@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 import {
   Button,
@@ -22,16 +23,6 @@ import { useForm } from 'react-hook-form';
 //My components
 import StandardImageList from './StandardImageList';
 
-//Login to pocketbase
-const pbLogin = async () => {
-  await pb
-    .collection('users')
-    .authWithPassword('magnus.stromseng@gmail.com', 'asdasdasd');
-  console.log(pb.authStore.isValid);
-  console.log(pb.authStore.token);
-  console.log(pb.authStore.model.id);
-};
-
 function getFirstItemOfSet(set) {
   for (let item of set) {
     if (item) {
@@ -43,6 +34,8 @@ function getFirstItemOfSet(set) {
 
 export default function PostForm() {
   const [selectedCategory, setSelectedCategory] = React.useState('Category');
+
+  const router = useRouter();
 
   const {
     register,
@@ -86,11 +79,11 @@ export default function PostForm() {
       Address: data.address,
       Zipcode: data.zipcode,
     });
-    pbLogin();
     pbCreateAd(data, selectedCategory)
       .then((result) => {
         // success...
         console.log('Result:', result);
+        router.push(`/posts/${result.id}`);
       })
       .catch((error) => {
         // error...
@@ -187,6 +180,7 @@ export default function PostForm() {
                 <Grid xs={12}>
                   <Input
                     type="file"
+                    multiple
                     label="Upload images"
                     {...register('pictures')}
                   ></Input>

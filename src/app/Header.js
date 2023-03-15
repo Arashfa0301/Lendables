@@ -81,7 +81,7 @@ export default function Header() {
             setActivePage(2);
           }}
         >
-          <Link href="/createad">
+          <Link href="/createpost">
             <link
               rel="stylesheet"
               href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,500,0,0"
