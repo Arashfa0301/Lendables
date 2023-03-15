@@ -12,6 +12,7 @@ import { Input } from '@nextui-org/react';
 import { Container, Row, Col } from '@nextui-org/react';
 import { Delete, Camera } from 'react-iconly';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 
 export default function ProfileCard({ userRecord }) {
   const {
@@ -20,6 +21,8 @@ export default function ProfileCard({ userRecord }) {
     watch,
     formState: { errors },
   } = useForm();
+
+  const router = useRouter();
 
   const validateForm = (data) => {};
 
@@ -34,6 +37,7 @@ export default function ProfileCard({ userRecord }) {
     formData.append('password', data.newpw1);
     formData.append('passwordConfirm', data.newpw2);
     formData.append('oldPassword', data.oldpw);
+    formData.append('avatar', data.avatar[0]);
     updateProfile(formData);
   };
 
@@ -42,6 +46,14 @@ export default function ProfileCard({ userRecord }) {
     console.log('FormData: ', data);
     const record = await pb.collection('users').update(userRecord.id, data);
     console.log('Record: ', record);
+    router.refresh();
+  }
+
+  async function deleteAvatar() {
+    await pb.collection('users').update(userRecord.id, {
+      avatar: null,
+    });
+    router.refresh();
   }
 
   return (
@@ -71,7 +83,10 @@ export default function ProfileCard({ userRecord }) {
               <Grid>
                 <Grid.Container direction="column" gap={3} alignItems="center">
                   <Grid>
-                    <Button icon={<Camera set="bold" primaryColor="white" />}>
+                    <Button
+                      disabled
+                      icon={<Camera set="bold" primaryColor="white" />}
+                    >
                       Change Avatar
                     </Button>
                   </Grid>
@@ -79,6 +94,7 @@ export default function ProfileCard({ userRecord }) {
                     <Button
                       icon={<Delete set="bold" primaryColor="white" />}
                       color="error"
+                      onClick={deleteAvatar}
                     >
                       Remove Avatar
                     </Button>
@@ -86,6 +102,13 @@ export default function ProfileCard({ userRecord }) {
                 </Grid.Container>
               </Grid>
             </Grid.Container>
+            <Grid>
+              <Input
+                type="file"
+                label="Upload avatar"
+                {...register('avatar')}
+              ></Input>
+            </Grid>
             <Grid>
               <Input
                 bordered
